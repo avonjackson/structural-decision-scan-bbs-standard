@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Built Beyond Survival™ — The Structural Decision Scan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --card: #ffffff;
+      --text: #2f2935;
+      --muted: #6f6577;
+      --purple: #4a1d7f;
+      --purple-2: #6b3fa0;
+      --purple-line: #e8e0f0;
+      --red: #b43b2f;
+      --red-soft: #f9e6e4;
+      --red-line: #e8b8b2;
+      --danger: #b43b2f;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); }
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, .heading-font, .button-text { font-family: 'Space Grotesk', sans-serif; }
+    .screen { display: none; width: 100%; min-height: 100%; }
+    .screen.active { display: flex; }
+    .card-premium { background: var(--card); border: 1px solid var(--purple-line); border-radius: 10px; }
+    .section-divider { height: 1px; background: var(--purple-line); }
+    .title-large { font-size: 32px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; color: var(--purple); }
+    .title-small { font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--purple); }
+    .subtitle-accent { font-size: 16px; line-height: 1.5; color: var(--muted); }
+    .body-text { font-size: 14px; line-height: 1.6; color: var(--text); }
+    .button-text { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .legal-note { font-size: 11px; line-height: 1.4; color: #90859a; text-align: center; margin-top: 18px; }
+    .legal-note a { color: var(--purple); text-decoration: none; }
+    .legal-note a:hover { text-decoration: underline; }
+
+    .scan-header { position: relative; width: 120px; height: 120px; margin: 0 auto 0.75rem; }
+    .scan-header.sm { width: 80px; height: 80px; }
+    .radar-bg { position: absolute; inset: 0; }
+    .radar-circle { position: absolute; border: 1px solid #dcd5e8; border-radius: 9999px; }
+    .radar-circle:nth-child(1) { inset: 0; }
+    .radar-circle:nth-child(2) { inset: 20px; }
+    .radar-circle:nth-child(3) { inset: 40px; }
+    .radar-circle:nth-child(4) { inset: 60px; }
+    .scan-header.sm .radar-circle:nth-child(2) { inset: 13px; }
+    .scan-header.sm .radar-circle:nth-child(3) { inset: 27px; }
+    .scan-header.sm .radar-circle:nth-child(4) { inset: 40px; }
+    .radar-dot { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #555; border-radius: 50%; transform: translate(-50%, -50%); }
+    .scan-header.sm .radar-dot { width: 5px; height: 5px; }
+    .radar-line { position: absolute; top: 50%; left: 50%; width: 60px; height: 1px; background: linear-gradient(90deg, #555 0%, transparent 100%); transform: translateX(-50%); opacity: 0.5; }
+    .scan-header.sm .radar-line { width: 40px; }
+
+    .bar-fill { height: 100%; background: var(--purple); border-radius: 999px; transition: width 0.4s ease; }
+    .answer-btn {
+      width: 100%; text-align: left; border: 2px solid #d4c8e1; background: white; color: #3a3340;
+      min-height: 3.5rem; display: flex; align-items: center; padding: 0 1.25rem; font-size: 14px;
+      font-weight: 500; line-height: 1.4; border-radius: 8px; transition: all 0.15s ease;
+    }
+    .answer-btn:hover { border-color: var(--purple); background: #3a1260; color: #fff; }
+    .answer-btn.selected { border-color: var(--purple); background: var(--purple); color: #fff; }
+
+    @keyframes spin-ring { to { transform: rotate(360deg); } }
+    .spinner { width: 48px; height: 48px; border: 3px solid #3a1260; border-top-color: var(--purple); border-radius: 50%; animation: spin-ring 1s linear infinite; }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fade-up 0.45s ease forwards; }
+
+    .tier-box, .results-box { background: white; border: 1px solid #e0d8ea; border-radius: 10px; }
+    .highlight-red { background: var(--red-soft); border: 1px solid var(--red-line); }
+    .path-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; border: 1px solid transparent; }
+    .path-row span:last-child { color: #8a7d93; font-size: 13px; }
+    .path-row.red-active { background: var(--red-soft); border-color: var(--red-line); }
+    .path-row.red-active span { font-weight: 600; }
+    .path-row.red-active span:last-child { color: var(--red); }
+
+    .review-page { max-width: 960px; margin: 0 auto; }
+    .review-page .review-card { background: #fff; border: 1px solid #e0d8ea; border-radius: 10px; padding: 24px; }
+    .review-page .review-stack > * + * { margin-top: 18px; }
+    .review-page .review-actions { position: sticky; top: 0; z-index: 10; background: rgba(250,249,247,0.96); backdrop-filter: blur(6px); padding: 14px 0 18px; }
+
+    @media print {
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .screen { display: none !important; }
+      #screen-print-review.active { display: block !important; min-height: auto !important; }
+      #screen-print-review { padding: 0 !important; }
+      .review-page { max-width: none !important; margin: 0 !important; }
+      .review-page .review-actions { display: none !important; }
+      .review-page .review-card { border: 1px solid #ddd !important; box-shadow: none !important; break-inside: avoid; }
+      a { text-decoration: none; color: inherit; }
+    }
+  </style>
+</head>
+<body class="h-full overflow-auto">
+  <div id="app" class="w-full min-h-full">
+
+    <div id="screen-welcome" class="screen active flex-col items-center justify-center px-6 py-12">
+      <div class="max-w-xl mx-auto w-full fade-up">
+        <div class="card-premium p-10">
+          <div class="text-center">
+            <div class="scan-header">
+              <div class="radar-bg">
+                <div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div>
+                <div class="radar-dot"></div><div class="radar-line"></div>
+              </div>
+            </div>
+            <h1 class="title-large">Built Beyond Survival™</h1>
+            <p class="subtitle-accent" style="color:var(--purple)">The Structural Decision Scan</p>
+          </div>
+          <div class="space-y-3 text-left max-w-md mx-auto mb-8 mt-4">
+            <p class="body-text">You learned how to function under pressure.</p>
+            <p class="body-text">Now it’s time to see if what you built can function without you.</p>
+            <p class="body-text">If your income depends on you,<br>it isn’t built.</p>
+            <p class="body-text">It’s being carried.</p>
+            <p class="body-text" style="font-weight:700;color:var(--purple);margin-top:1.25rem;">This will show you exactly where that is happening.</p>
+          </div>
+          <div class="text-center">
+            <button onclick="goTo('instructions')" class="px-9 py-2.5 text-white rounded-md button-text no-print" style="background:var(--purple)">Start Scan</button>
+          </div>
+          <p class="legal-note">By continuing, you acknowledge this is a structural evaluation tool. <a href="#" onclick="openLegal('disclaimer');return false;">Disclaimer</a> · <a href="#" onclick="openLegal('terms');return false;">Terms</a> · <a href="#" onclick="openLegal('privacy');return false;">Privacy</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-instructions" class="screen flex-col items-center justify-center px-6 py-12">
+      <div class="max-w-xl mx-auto w-full fade-up">
+        <div class="card-premium p-10">
+          <div class="text-center">
+            <div class="scan-header sm">
+              <div class="radar-bg">
+                <div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div>
+                <div class="radar-dot"></div><div class="radar-line"></div>
+              </div>
+            </div>
+            <h1 class="title-large">How This Works</h1>
+            <p class="subtitle-accent" style="color:var(--purple)">20 Questions · 5 Categories</p>
+          </div>
+          <div class="text-left space-y-2.5">
+            <p class="body-text">This is not about effort.</p>
+            <p class="body-text">This identifies how your system is currently functioning.</p>
+            <p class="body-text">You’ll move through five areas:</p>
+            <ul class="space-y-1 pl-4 body-text">
+              <li>• Lead Generation</li>
+              <li>• Conversion</li>
+              <li>• Delivery</li>
+              <li>• Follow-Up</li>
+              <li>• Retention</li>
+            </ul>
+            <p class="body-text" style="margin-top:1.25rem;font-weight:700;">Each answer reflects what is already built — not what you intend to build.</p>
+            <p class="body-text">Answer based on how your system runs today.</p>
+          </div>
+          <div class="text-center mt-8">
+            <button onclick="goTo('questions')" class="px-9 py-2.5 text-white rounded-md button-text no-print" style="background:var(--purple)">Begin Questions</button>
+          </div>
+          <p class="legal-note">This scan is for educational and evaluative use. <a href="#" onclick="openLegal('disclaimer');return false;">Disclaimer</a> · <a href="#" onclick="openLegal('terms');return false;">Terms</a> · <a href="#" onclick="openLegal('privacy');return false;">Privacy</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-questions" class="screen flex-col items-center justify-center px-6 py-12">
+      <div class="max-w-xl mx-auto w-full fade-up">
+        <div class="card-premium p-8">
+          <div class="flex items-center justify-between mb-4 no-print">
+            <button id="back-btn" onclick="prevQuestion()" class="text-sm font-medium flex items-center gap-1" style="color:var(--purple)">← Back</button>
+            <span id="q-progress" class="text-xs font-medium" style="color:#999"></span>
+          </div>
+          <div class="w-full h-1 rounded-full mb-6 no-print" style="background:#e9e2f0"><div id="q-bar" class="bar-fill" style="width:0%"></div></div>
+          <p id="q-category" class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:var(--purple)"></p>
+          <h2 id="q-text" class="text-lg md:text-xl font-semibold mb-7 heading-font" style="color:var(--purple);line-height:1.4"></h2>
+          <div id="q-answers" class="space-y-3 no-print"></div>
+          <p class="legal-note">Responses stay within this browser session. <a href="#" onclick="openLegal('privacy');return false;">Privacy</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-analyzing" class="screen flex-col items-center justify-center px-6 py-12">
+      <div class="text-center fade-up">
+        <div class="scan-header sm">
+          <div class="radar-bg">
+            <div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div>
+            <div class="radar-dot"></div><div class="radar-line"></div>
+          </div>
+        </div>
+        <h1 class="title-large mb-6">Analyzing Your Structure</h1>
+        <div class="spinner mx-auto mb-6"></div>
+        <p id="analyze-msg" class="text-base" style="color:#777"></p>
+      </div>
+    </div>
+
+    <div id="screen-results" class="screen flex-col items-center justify-center px-6 py-12">
+      <div class="max-w-2xl mx-auto w-full fade-up">
+        <div class="text-center mb-8">
+          <div class="scan-header sm">
+            <div class="radar-bg">
+              <div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div><div class="radar-circle"></div>
+              <div class="radar-dot"></div><div class="radar-line"></div>
+            </div>
+          </div>
+          <h1 class="title-large">Your Structural Breakdown</h1>
+        </div>
+
+        <div class="tier-box p-8 mb-8 text-center">
+          <p id="results-tier-label" class="title-small mb-2"></p>
+          <p id="results-score-number" style="font-size:56px;font-weight:700;color:var(--purple);margin:0;line-height:1" class="heading-font mb-2"></p>
+          <p class="body-text mb-4" style="color:#999;margin:0">/ 80</p>
+          <div class="section-divider my-4"></div>
+          <p class="body-text leading-relaxed" style="color:#555;margin:0">You do not need more effort.<br><strong>You need to correct where your system is not built.</strong></p>
+        </div>
+
+        <div class="space-y-4 mb-8">
+          <div class="results-box p-6"><p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:var(--purple)">Primary Breakdown</p><p id="primary-breakdown" class="body-text leading-relaxed"></p></div>
+          <div class="results-box p-6"><p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:var(--purple)">Reinforcing Breakdown</p><p id="secondary-breakdown" class="body-text leading-relaxed"></p></div>
+        </div>
+
+        <div class="results-box p-6 mb-8">
+          <h3 class="title-small mb-4">Category Breakdown</h3>
+          <div id="results-breakdown-list" class="space-y-3"></div>
+        </div>
+
+        <div class="grid md:grid-cols-4 gap-3 no-print">
+          <button onclick="goTo('bbs-standard')" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Continue to the Standard</button>
+          <button onclick="renderQuestion(); goTo('questions')" class="py-3 px-4 border-2 rounded-md button-text" style="border-color:var(--purple);color:var(--purple)">Review Again</button>
+          <button onclick="goToPrintReview()" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Print Review</button>
+          <button onclick="downloadResults()" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Download</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-bbs-standard" class="screen flex-col items-center px-6 py-12">
+      <div class="max-w-2xl mx-auto w-full fade-up">
+        <div class="text-center mb-8">
+          <h1 class="title-large">Built Beyond Survival™</h1>
+          <p class="subtitle-accent">What you carry to survive cannot remain the standard for how you build.</p>
+        </div>
+
+        <div class="mb-8 bg-white border rounded-lg p-6" style="border-color:#e0d8ea">
+          <h3 class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:var(--purple)">From the Source</h3>
+          <div style="position:relative;width:100%;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:6px;margin-bottom:1.5rem">
+            <iframe id="video-frame" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="bg-white border rounded-lg p-6 mb-8" style="border-color:#e0d8ea">
+          <p class="body-text leading-relaxed">You’ve identified where your system is not built.</p>
+          <p class="body-text leading-relaxed mt-2"><strong>Correction is no longer optional if this is going to hold.</strong></p>
+        </div>
+
+        <div class="bg-white border rounded-lg p-6 mb-8" style="border-color:#e0d8ea">
+          <h2 class="title-small mb-6">The Standard</h2>
+          <div class="space-y-4 body-text leading-relaxed">
+            <div class="pl-4 border-l-4" style="border-color:var(--purple)"><p style="margin:0"><strong>If it depends on you</strong> — it is not built.</p></div>
+            <div class="pl-4 border-l-4" style="border-color:var(--purple)"><p style="margin:0"><strong>If it stops when you stop</strong> — it is not structured.</p></div>
+            <div class="pl-4 border-l-4" style="border-color:var(--purple)"><p style="margin:0"><strong>If it requires constant effort</strong> — it does not qualify to remain.</p></div>
+          </div>
+        </div>
+
+        <div class="bg-white border rounded-lg p-6 mb-8" style="border-color:#e0d8ea">
+          <h3 class="title-small mb-4">Where Your System Is Not Built</h3>
+          <div class="space-y-3 body-text leading-relaxed">
+            <div><p class="font-semibold" style="color:var(--purple);margin:0">Primary:</p><p id="standard-primary" class="mt-1" style="color:#555;margin:0"></p></div>
+            <div class="mt-4"><p class="font-semibold" style="color:var(--purple);margin:0">Reinforced by:</p><p id="standard-secondary" class="mt-1" style="color:#555;margin:0"></p></div>
+          </div>
+        </div>
+
+        <div class="bg-white border rounded-lg p-6 mb-8" style="border-color:#e0d8ea">
+          <h2 class="title-small mb-3">Define Your Standard</h2>
+          <p class="body-text mb-1" style="color:#555">Define what no longer qualifies to be carried.</p>
+          <p class="body-text mb-4" style="color:#555">Anything that depends on you must be corrected or removed.</p>
+          <p class="body-text mb-3" style="color:var(--purple);font-weight:700">This is the line your structure must now meet.</p>
+          <textarea id="standard-input" rows="5" placeholder="Write your standard here..." class="w-full border rounded-md p-4 text-sm resize-none focus:outline-none" style="border-color:#dcd5e8;color:#333"></textarea>
+          <p id="standard-error" class="text-xs mt-2" style="color:var(--danger);display:none">You haven’t defined your standard yet.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-3 no-print mb-8">
+          <div>
+            <button onclick="proceedToFinal()" class="py-3 px-4 text-white rounded-md button-text w-full" style="background:var(--purple)">Set My Standard and Continue</button>
+            <p class="text-xs mt-2" style="color:#999">This becomes your operating condition.</p>
+          </div>
+          <button onclick="goTo('results')" class="py-3 px-4 border-2 rounded-md button-text" style="border-color:var(--purple);color:var(--purple)">← Back to Results</button>
+        </div>
+        <p class="legal-note">Use of this scan remains subject to the same product notice. <a href="#" onclick="openLegal('disclaimer');return false;">Disclaimer</a> · <a href="#" onclick="openLegal('terms');return false;">Terms</a> · <a href="#" onclick="openLegal('privacy');return false;">Privacy</a></p>
+      </div>
+    </div>
+
+    <div id="screen-final" class="screen flex-col items-center px-6 py-12">
+      <div class="max-w-2xl mx-auto w-full fade-up">
+        <div class="text-center mb-8"><h1 class="title-large">What You Do Next</h1></div>
+
+        <div class="bg-white border rounded-lg p-6 mb-6" style="border-color:#e0d8ea"><p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:var(--purple)">Primary Breakdown</p><p id="final-primary" class="body-text leading-relaxed"></p></div>
+        <div class="bg-white border rounded-lg p-6 mb-6" style="border-color:#e0d8ea"><p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color:var(--purple)">Reinforcing Breakdown</p><p id="final-secondary" class="body-text leading-relaxed"></p></div>
+
+        <div class="bg-white border rounded-lg p-6 mb-8" style="border-color:#e0d8ea">
+          <h2 class="title-small mb-4">Your Standard</h2>
+          <p id="final-standard-text" class="body-text leading-relaxed italic mb-4"></p>
+          <div class="section-divider my-4"></div>
+          <p class="body-text leading-relaxed" style="color:#555"><strong>Movement without correction returns you to the same structure.</strong></p>
+          <p class="body-text leading-relaxed mt-3" style="color:#555"><strong>This only works if what is not built is corrected.</strong></p>
+        </div>
+
+        <div class="bg-white border rounded-lg p-6 mb-8" style="border-color:#e0d8ea">
+          <h2 class="title-small mb-6">Correction Path</h2>
+          <div class="space-y-2 body-text">
+            <div id="path-lead" class="path-row"><span>Lead Generation</span><span>→ Structural correction required</span></div>
+            <div id="path-conversion" class="path-row"><span>Conversion</span><span>→ Structural correction required</span></div>
+            <div id="path-delivery" class="path-row"><span>Delivery</span><span>→ Structural correction required</span></div>
+            <div id="path-followup" class="path-row"><span>Follow-Up</span><span>→ Structural correction required</span></div>
+            <div id="path-retention" class="path-row"><span>Retention</span><span>→ Structural correction required</span></div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-4 gap-3 no-print">
+          <button onclick="goTo('results')" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Review Results</button>
+          <button onclick="goToPrintReview()" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Print Review</button>
+          <button onclick="downloadResults()" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Download</button>
+          <button onclick="startOver()" class="py-3 px-4 border-2 rounded-md button-text" style="border-color:var(--purple);color:var(--purple)">Start Over</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-print-review" class="screen flex-col items-center px-6 py-8">
+      <div class="review-page w-full fade-up">
+        <div class="review-actions no-print flex flex-wrap gap-3 justify-between items-center">
+          <div>
+            <h1 class="title-small mb-1">Print Review</h1>
+            <p class="body-text" style="color:#6f6577;margin:0">All results and corrective sections are included below.</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="goBackFromPrintReview()" class="py-3 px-4 border-2 rounded-md button-text" style="border-color:var(--purple);color:var(--purple)">Back</button>
+            <button onclick="window.print()" class="py-3 px-4 text-white rounded-md button-text" style="background:var(--purple)">Print</button>
+          </div>
+        </div>
+
+        <div class="review-stack">
+          <div class="review-card text-center">
+            <h1 class="title-large" style="margin-bottom:8px">Built Beyond Survival™</h1>
+            <p class="subtitle-accent" style="color:var(--purple);margin-bottom:18px">The Structural Decision Scan Review</p>
+            <div class="section-divider my-4"></div>
+            <p id="print-tier" class="title-small mb-2"></p>
+            <p id="print-score" class="heading-font" style="font-size:54px;font-weight:700;color:var(--purple);margin:0;line-height:1"></p>
+            <p class="body-text" style="color:#999;margin-top:8px">/ 80</p>
+          </div>
+
+          <div class="review-card"><h2 class="title-small mb-3">Primary Breakdown</h2><p id="print-primary" class="body-text"></p></div>
+          <div class="review-card"><h2 class="title-small mb-3">Reinforcing Breakdown</h2><p id="print-secondary" class="body-text"></p></div>
+          <div class="review-card"><h2 class="title-small mb-3">Category Breakdown</h2><div id="print-category-list" class="space-y-3"></div></div>
+          <div class="review-card"><h2 class="title-small mb-3">What the Standard Means</h2><p class="body-text">What you carry to survive cannot remain the standard for how you build. Anything that depends on you must be corrected, replaced, or removed.</p></div>
+          <div class="review-card"><h2 class="title-small mb-3">Your Most Exposed Areas</h2><p class="body-text"><strong>Primary:</strong> <span id="print-standard-primary"></span></p><p class="body-text" style="margin-top:10px"><strong>Reinforced by:</strong> <span id="print-standard-secondary"></span></p></div>
+          <div class="review-card"><h2 class="title-small mb-3">Your Standard</h2><p id="print-standard-text" class="body-text italic"></p></div>
+          <div class="review-card"><h2 class="title-small mb-4">Corrective Actions</h2><div id="print-correctives" class="space-y-3"></div></div>
+          <div class="review-card"><h2 class="title-small mb-4">Correction Path</h2><div id="print-paths" class="space-y-2"></div></div>
+          <div class="review-card"><p class="body-text"><strong>Reminder:</strong> Movement without correction returns you to the same structure. This only works if what is not built is corrected.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="legal-modal" style="display:none;position:fixed;inset:0;background:rgba(21,14,28,0.62);align-items:center;justify-content:center;padding:20px;z-index:60;">
+    <div style="background:#fff;padding:24px;border-radius:10px;max-width:640px;width:100%;border:1px solid #e8e0f0;">
+      <h3 id="legal-title" class="title-small" style="margin-bottom:10px"></h3>
+      <p id="legal-content" class="body-text" style="color:#555;white-space:pre-line"></p>
+      <button onclick="closeLegal()" class="mt-4 py-2 px-4 text-white rounded-md button-text" style="background:var(--purple)">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const VIDEO_URL = 'https://www.youtube.com/embed/YOUR_VIDEO_ID';
+    document.getElementById('video-frame').src = VIDEO_URL;
+
+    const LEGAL = {
+      disclaimer: `This tool provides structural insights for educational purposes only. It does not provide legal, financial, tax, mental health, medical, or business guarantee advice. No specific income, performance, or business outcome is promised. Your results depend on your own decisions, implementation, timing, and market conditions.`,
+      terms: `This digital product is provided for individual use only. Purchase does not transfer copyright, resale rights, or reproduction rights unless expressly stated elsewhere. Because this is a digital product, all sales are final and non-refundable. Unauthorized copying, redistribution, or resale is prohibited.`,
+      privacy: `This version of the scan runs in-browser. Your responses are not intentionally stored on an external server by this file alone. If you later host or connect this scan to a platform, you are responsible for updating the privacy language to match your actual data collection, storage, and email practices.`
+    };
+
+    function openLegal(type) {
+      document.getElementById('legal-title').innerText = type.charAt(0).toUpperCase() + type.slice(1);
+      document.getElementById('legal-content').innerText = LEGAL[type];
+      document.getElementById('legal-modal').style.display = 'flex';
+    }
+    function closeLegal() { document.getElementById('legal-modal').style.display = 'none'; }
+
+    const QUESTIONS = [
+      {cat:'Lead Generation',q:'How are new leads generated?',a:['Multiple consistent sources','One primary system','Mixed manual and inconsistent','Mostly manual effort','No clear system']},
+      {cat:'Lead Generation',q:'How are leads captured?',a:['Automated capture system','Mostly automated','Partial capture setup','Manual tracking','No capture system']},
+      {cat:'Lead Generation',q:'How predictable is your lead flow?',a:['Consistent and trackable','Mostly consistent','Fluctuates but present','Unpredictable','No steady flow']},
+      {cat:'Lead Generation',q:'How dependent is lead flow on manual effort?',a:['Runs without input','Minimal input needed','Some manual involvement','Heavy manual effort','Fully manual']},
+      {cat:'Conversion',q:'How do customers complete a purchase?',a:['Fully automated','Mostly automated','Some manual steps','Requires interaction','Cannot purchase without you']},
+      {cat:'Conversion',q:'How consistent is your conversion process?',a:['Defined and repeatable','Mostly consistent','Some variation','Inconsistent','No defined process']},
+      {cat:'Conversion',q:'What is required to close a sale?',a:['System handles it','Minimal involvement','Some direct interaction','Regular involvement','Full personal handling']},
+      {cat:'Conversion',q:'How clear is your offer and path to purchase?',a:['Clear and direct','Mostly clear','Some confusion','Often unclear','No defined path']},
+      {cat:'Delivery',q:'How is your product or service delivered?',a:['Fully automated','Mostly automated','Mixed system','Mostly manual','Fully manual']},
+      {cat:'Delivery',q:'How consistent is delivery quality?',a:['Fully consistent','Mostly consistent','Some variation','Often inconsistent','Unreliable']},
+      {cat:'Delivery',q:'How scalable is your delivery system?',a:['Handles growth easily','Minor adjustments needed','Some strain under growth','Struggles with growth','Breaks under demand']},
+      {cat:'Delivery',q:'How documented is your delivery process?',a:['Fully documented','Mostly documented','Partially documented','Minimal documentation','Not documented']},
+      {cat:'Follow-Up',q:'How do you follow up with leads and customers?',a:['Automated sequences','Mostly automated','Mixed system','Mostly manual','No follow-up system']},
+      {cat:'Follow-Up',q:'How consistent is follow-up?',a:['Always happens','Mostly consistent','Sometimes missed','Often missed','Rarely happens']},
+      {cat:'Follow-Up',q:'What triggers follow-up?',a:['System-based triggers','Mostly system-based','Some manual triggers','Mostly manual','No trigger system']},
+      {cat:'Follow-Up',q:'How tracked is customer interaction?',a:['Fully tracked system','Mostly tracked','Partially tracked','Minimal tracking','No tracking']},
+      {cat:'Retention',q:'How do customers return or re-engage?',a:['Built-in system','Mostly structured','Some structure','Mostly manual','No system']},
+      {cat:'Retention',q:'How consistent is repeat business?',a:['Predictable','Mostly consistent','Occasional','Rare','None']},
+      {cat:'Retention',q:'How are long-term relationships maintained?',a:['Automated and structured','Mostly structured','Some effort required','Mostly manual','Not maintained']},
+      {cat:'Retention',q:'How is customer value extended over time?',a:['Clear system in place','Mostly structured','Some opportunities','Rarely extended','No system']}
+    ];
+
+    const CATEGORIES = ['Lead Generation','Conversion','Delivery','Follow-Up','Retention'];
+    const CORRECTIVES = {
+      'Lead Generation': 'Build a repeatable lead source that does not depend on daily manual effort. Clarify where attention comes from, how it is captured, and what keeps lead flow consistent.',
+      'Conversion': 'Tighten the path from interest to purchase. Remove friction, remove missing steps, and make the buying path clear enough to function without constant personal handling.',
+      'Delivery': 'Document the delivery sequence and reduce what must be carried manually. Delivery must remain consistent under volume, not only under perfect conditions.',
+      'Follow-Up': 'Create a follow-up system with clear triggers, timing, and message sequence. Ongoing communication should not depend on memory or manual rescue.',
+      'Retention': 'Install a retention path that supports return, continuation, or deeper value over time. Growth cannot rely only on replacing lost attention with new attention.'
+    };
+
+    let answers = [];
+    let currentQ = 0;
+    let userStandard = '';
+    let primaryExposureCategory = '';
+    let secondaryExposureCategory = '';
+    let categoryScores = {};
+    let lastNonPrintScreen = 'results';
+
+    function goTo(id) {
+      if (id !== 'print-review') lastNonPrintScreen = id;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById('screen-' + id);
+      if (el) {
+        el.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        if (id === 'questions') renderQuestion();
+        if (id === 'analyzing') runAnalysis();
+      }
+    }
+
+    function renderQuestion() {
+      const q = QUESTIONS[currentQ];
+      document.getElementById('q-category').textContent = q.cat;
+      document.getElementById('q-text').textContent = q.q;
+      document.getElementById('q-progress').textContent = (currentQ + 1) + ' / ' + QUESTIONS.length;
+      document.getElementById('q-bar').style.width = ((currentQ + 1) / QUESTIONS.length * 100) + '%';
+      document.getElementById('back-btn').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+      const container = document.getElementById('q-answers');
+      container.innerHTML = '';
+      q.a.forEach((text, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = text;
+        if (answers[currentQ] === i) btn.classList.add('selected');
+        btn.onclick = () => selectAnswer(i, btn);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(i, btn) {
+      document.querySelectorAll('.answer-btn').forEach(b => { b.classList.remove('selected'); b.style.pointerEvents = 'none'; });
+      btn.classList.add('selected');
+      answers[currentQ] = i;
+      setTimeout(() => {
+        if (currentQ < QUESTIONS.length - 1) {
+          currentQ++;
+          renderQuestion();
+        } else {
+          goTo('analyzing');
+        }
+      }, 180);
+    }
+
+    function prevQuestion() {
+      if (currentQ > 0) {
+        currentQ--;
+        renderQuestion();
+      } else {
+        goTo('instructions');
+      }
+    }
+
+    function runAnalysis() {
+      const msgs = ['Mapping system structure…','Analyzing process flow…','Identifying breakdown points…','Locating structural gaps…','Finalizing results…'];
+      let idx = 0;
+      const el = document.getElementById('analyze-msg');
+      el.textContent = msgs[0];
+      const iv = setInterval(() => {
+        idx++;
+        if (idx < msgs.length) {
+          el.textContent = msgs[idx];
+        } else {
+          clearInterval(iv);
+          buildResults();
+          setTimeout(() => goTo('results'), 900);
+        }
+      }, 500);
+    }
+
+    function buildResults() {
+      const scores = {};
+      CATEGORIES.forEach(c => scores[c] = { total: 0, count: 0 });
+
+      QUESTIONS.forEach((q, i) => {
+        const val = answers[i] !== undefined ? answers[i] : 0; // lower better, higher needs correction
+        scores[q.cat].total += val;
+        scores[q.cat].count++;
+      });
+      categoryScores = scores;
+
+      let totalScore = 0, totalMax = 0;
+      CATEGORIES.forEach(c => {
+        totalScore += scores[c].total;
+        totalMax += scores[c].count * 4;
+      });
+
+      const overallScore = Math.round((totalScore / totalMax) * 80);
+      let tier = 'Structurally Built';
+      if (overallScore >= 57) tier = 'Unstructured System';
+      else if (overallScore >= 33) tier = 'Fragmented System';
+      else if (overallScore >= 17) tier = 'Partially Built';
+
+      document.getElementById('results-tier-label').textContent = tier;
+      document.getElementById('results-score-number').textContent = overallScore;
+
+      const catEl = document.getElementById('results-breakdown-list');
+      catEl.innerHTML = '<p class="text-xs mb-3" style="color:#777">Lower = more structured · Higher = more correction needed</p>';
+      const getScoreLabel = (score) => score <= 4 ? 'Low' : score <= 8 ? 'Moderate' : score <= 12 ? 'High' : 'Critical';
+      CATEGORIES.forEach(cat => {
+        const score = scores[cat].total;
+        catEl.innerHTML += `<div class="flex justify-between items-baseline gap-4"><span class="body-text">${cat}</span><span class="body-text font-semibold" style="color:var(--purple)">${score}/16 (${getScoreLabel(score)})</span></div>`;
+      });
+
+      const sorted = Object.entries(scores).sort((a, b) => b[1].total - a[1].total);
+      const topScore = sorted[0][1].total;
+      const tied = sorted.filter(([_, val]) => val.total === topScore);
+      const isSystemWide = tied.length === CATEGORIES.length || tied.length >= 3;
+
+      const primaryInsights = {
+        'Lead Generation': 'Lead generation is not system-driven. New demand is not being created consistently without manual input.',
+        'Conversion': 'Your conversion process is not fully built. Movement from interest to purchase depends on inconsistent steps.',
+        'Delivery': 'Your delivery system is not fully structured. Fulfillment cannot scale without breakdown.',
+        'Follow-Up': 'Follow-up is not systemized. Ongoing communication is not being maintained through structure.',
+        'Retention': 'Retention is not built into the system. Customer continuation is not supported by consistent processes.'
+      };
+      const secondaryInsights = {
+        'Lead Generation': 'When lead flow is not structured, pressure shifts to conversion to compensate.',
+        'Conversion': 'When conversion is not structured, time becomes the limiting factor.',
+        'Delivery': 'When delivery is not structured, consistency and scalability are reduced.',
+        'Follow-Up': 'When follow-up is not structured, retention weakens over time.',
+        'Retention': 'When retention is not structured, growth depends on constant new acquisition.'
+      };
+
+      if (isSystemWide) {
+        primaryExposureCategory = 'System-Wide';
+        secondaryExposureCategory = '';
+        const systemWide = 'Correction is required across multiple areas of your system. This is not isolated — it is structural across how your income currently functions.';
+        document.getElementById('primary-breakdown').innerHTML = `<span style="color:var(--red);font-weight:700;display:block;margin-bottom:6px;">System-Wide Breakdown</span><span>${systemWide}</span>`;
+        document.getElementById('secondary-breakdown').textContent = 'Multiple categories are reinforcing the same structural instability.';
+        document.getElementById('final-primary').innerHTML = `<span style="color:var(--red);font-weight:700;display:block;margin-bottom:6px;">System-Wide Breakdown</span><span>${systemWide}</span>`;
+        document.getElementById('final-secondary').textContent = 'Correction must happen across multiple categories, not in one isolated fix.';
+      } else {
+        primaryExposureCategory = tied[0][0];
+        secondaryExposureCategory = sorted.find(([cat]) => cat !== primaryExposureCategory)[0];
+        document.getElementById('primary-breakdown').textContent = primaryInsights[primaryExposureCategory];
+        document.getElementById('secondary-breakdown').textContent = secondaryInsights[secondaryExposureCategory];
+        document.getElementById('final-primary').textContent = primaryInsights[primaryExposureCategory];
+        document.getElementById('final-secondary').textContent = secondaryInsights[secondaryExposureCategory];
+      }
+
+      showExposureInStandardScreen();
+      buildPrintReview();
+    }
+
+    function proceedToFinal() {
+      const input = document.getElementById('standard-input');
+      const errorMsg = document.getElementById('standard-error');
+      if (!input.value.trim()) {
+        errorMsg.style.display = 'block';
+        return;
+      }
+      userStandard = input.value.trim();
+      errorMsg.style.display = 'none';
+      document.getElementById('final-standard-text').textContent = userStandard;
+      buildPrintReview();
+      goTo('final');
+    }
+
+    function showExposureInStandardScreen() {
+      const primaryInsights = {
+        'Lead Generation': 'Lead generation is not system-driven.',
+        'Conversion': 'Your conversion process is not fully built.',
+        'Delivery': 'Your delivery system is not fully structured.',
+        'Follow-Up': 'Follow-up is not systemized.',
+        'Retention': 'Retention is not built into the system.'
+      };
+      const secondaryInsights = {
+        'Lead Generation': 'When lead flow is not structured, pressure shifts to conversion to compensate.',
+        'Conversion': 'When conversion is not structured, time becomes the limiting factor.',
+        'Delivery': 'When delivery is not structured, consistency and scalability are reduced.',
+        'Follow-Up': 'When follow-up is not structured, retention weakens over time.',
+        'Retention': 'When retention is not structured, growth depends on constant new acquisition.'
+      };
+
+      if (primaryExposureCategory === 'System-Wide') {
+        document.getElementById('standard-primary').textContent = 'Correction is required across multiple areas. Your system is not built in a single location — it is structural across how it currently functions.';
+        document.getElementById('standard-secondary').textContent = 'Multiple categories are reinforcing the same instability.';
+      } else {
+        document.getElementById('standard-primary').textContent = primaryInsights[primaryExposureCategory] || 'Primary exposure';
+        document.getElementById('standard-secondary').textContent = secondaryInsights[secondaryExposureCategory] || 'Secondary exposure';
+      }
+
+      const pathMap = {
+        'Lead Generation': 'path-lead',
+        'Conversion': 'path-conversion',
+        'Delivery': 'path-delivery',
+        'Follow-Up': 'path-followup',
+        'Retention': 'path-retention'
+      };
+
+      Object.values(pathMap).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('red-active');
+      });
+
+      if (primaryExposureCategory === 'System-Wide') {
+        Object.values(pathMap).forEach(id => document.getElementById(id)?.classList.add('red-active'));
+      } else {
+        document.getElementById(pathMap[primaryExposureCategory])?.classList.add('red-active');
+        document.getElementById(pathMap[secondaryExposureCategory])?.classList.add('red-active');
+      }
+    }
+
+    function goToPrintReview() {
+      buildPrintReview();
+      goTo('print-review');
+    }
+
+    function goBackFromPrintReview() {
+      goTo(lastNonPrintScreen || 'results');
+    }
+
+    function buildPrintReview() {
+      const tier = document.getElementById('results-tier-label').textContent || '';
+      const score = document.getElementById('results-score-number').textContent || '';
+      const primary = document.getElementById('primary-breakdown').innerText || '';
+      const secondary = document.getElementById('secondary-breakdown').innerText || '';
+      const standardPrimary = document.getElementById('standard-primary').textContent || '';
+      const standardSecondary = document.getElementById('standard-secondary').textContent || '';
+      const standardText = userStandard || document.getElementById('standard-input').value.trim() || 'Standard not yet defined.';
+
+      document.getElementById('print-tier').textContent = tier;
+      document.getElementById('print-score').textContent = score;
+      document.getElementById('print-primary').textContent = primary;
+      document.getElementById('print-secondary').textContent = secondary;
+      document.getElementById('print-standard-primary').textContent = standardPrimary;
+      document.getElementById('print-standard-secondary').textContent = standardSecondary;
+      document.getElementById('print-standard-text').textContent = standardText;
+
+      const getScoreLabel = (score) => score <= 4 ? 'Low' : score <= 8 ? 'Moderate' : score <= 12 ? 'High' : 'Critical';
+      const categoryList = document.getElementById('print-category-list');
+      categoryList.innerHTML = '<p class="text-xs mb-3" style="color:#777">Lower = more structured · Higher = more correction needed</p>';
+      CATEGORIES.forEach(cat => {
+        const scoreObj = categoryScores[cat] || { total: 0 };
+        categoryList.innerHTML += `<div class="flex justify-between items-baseline gap-4"><span class="body-text">${cat}</span><span class="body-text" style="font-weight:700;color:var(--purple)">${scoreObj.total}/16 (${getScoreLabel(scoreObj.total)})</span></div>`;
+      });
+
+      const correctives = document.getElementById('print-correctives');
+      correctives.innerHTML = '';
+      CATEGORIES.forEach(cat => {
+        const scoreObj = categoryScores[cat] || { total: 0 };
+        const critical = primaryExposureCategory === 'System-Wide' || cat === primaryExposureCategory || cat === secondaryExposureCategory;
+        const wrapper = document.createElement('div');
+        wrapper.className = critical ? 'highlight-red p-4 rounded-lg' : 'p-4 rounded-lg';
+        wrapper.style.border = critical ? '' : '1px solid #ece6f2';
+        wrapper.innerHTML = `<p class="body-text" style="font-weight:700;color:${critical ? 'var(--red)' : 'var(--purple)'};margin-bottom:6px">${cat} · ${scoreObj.total}/16</p><p class="body-text" style="margin:0;color:#4a4251">${CORRECTIVES[cat]}</p>`;
+        correctives.appendChild(wrapper);
+      });
+
+      const paths = document.getElementById('print-paths');
+      paths.innerHTML = '';
+      CATEGORIES.forEach(cat => {
+        const active = primaryExposureCategory === 'System-Wide' || cat === primaryExposureCategory || cat === secondaryExposureCategory;
+        const row = document.createElement('div');
+        row.className = 'path-row' + (active ? ' red-active' : '');
+        row.innerHTML = `<span>${cat}</span><span>→ Structural correction required</span>`;
+        paths.appendChild(row);
+      });
+    }
+
+    function downloadResults() {
+      buildPrintReview();
+      const reviewPage = document.querySelector('#screen-print-review .review-page').cloneNode(true);
+      reviewPage.querySelectorAll('.no-print').forEach(el => el.remove());
+      const html = `<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Structural Decision Scan Review</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>body{font-family:'DM Sans',sans-serif;background:#faf9f7;color:#2f2935;padding:24px}h1,h2,h3,h4,.button-text{font-family:'Space Grotesk',sans-serif}.title-large{font-size:32px;font-weight:600;line-height:1.15;letter-spacing:-.01em;color:#4a1d7f}.title-small{font-size:18px;font-weight:600;line-height:1.3;color:#4a1d7f}.subtitle-accent{font-size:16px;line-height:1.5;color:#6f6577}.body-text{font-size:14px;line-height:1.6;color:#2f2935}.section-divider{height:1px;background:#e8e0f0}.review-page{max-width:960px;margin:0 auto}.review-card{background:#fff;border:1px solid #e0d8ea;border-radius:10px;padding:24px}.review-stack>*+*{margin-top:18px}.path-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1px solid transparent}.path-row span:last-child{color:#8a7d93;font-size:13px}.red-active{background:#f9e6e4;border-color:#e8b8b2}.red-active span{font-weight:600}.red-active span:last-child{color:#b43b2f}.highlight-red{background:#f9e6e4;border:1px solid #e8b8b2}</style></head><body>${reviewPage.outerHTML}</body></html>`;
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'structural-decision-scan-review.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+  </script>
+</body>
+</html>
